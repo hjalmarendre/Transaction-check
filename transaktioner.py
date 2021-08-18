@@ -16,6 +16,7 @@ def main():
 def arrange_txt(file):
     with open(file, "r") as f:
         lines = f.readlines()
+    f.close()
     count = 0
     fortnox = dict()
     for line in lines:
@@ -40,13 +41,13 @@ def arrange_txt(file):
     for key in list_clean:
         del fortnox[f'{key}']
     #Här slutar fix med att ordna txt-fil från fortnox
-    f.close()
+    
     return fortnox
 
 def arrange_csv(file):
     with open(file,'r') as f:
         reader = csv.reader(f)
-    
+    f.close()
         rows = dict()
         count = 0
         for row in reader:
@@ -62,7 +63,7 @@ def arrange_csv(file):
             for rm in list_rm:
                 if rm in value:
                     value.remove(rm)
-    f.close()
+    
     return rows
 
 def arrange_date():
