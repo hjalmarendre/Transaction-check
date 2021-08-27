@@ -4,7 +4,7 @@ import csv
 
 def main():
     if len(sys.argv) == 2:
-        sys.exit("Usage py fortnox.txt transaktioner.csv")
+        sys.exit("Usage py transaktioner.py fortnox.txt transaktioner.csv")
     
     #Create dictionarys
     fortnox = arrange_txt(sys.argv[1])
