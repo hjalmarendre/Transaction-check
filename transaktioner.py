@@ -1,6 +1,7 @@
 import sys
 import csv
 import re
+import numpy as np
 
 def main():
     if len(sys.argv) == 2:
@@ -8,11 +9,14 @@ def main():
     #Create dictionarys
     fortnox = arrange_txt(sys.argv[1])
     bank = arrange_csv(sys.argv[2])
-    (lst_date,lst_sum) = check_total(fortnox,bank)
-    print(lst_date)
-    print(lst_sum)
+    #Check for errors. The function can be improved and get smarter. At the moment very easy check.
+    (lst_date,lst_sum,lst_wrong) = check_total(fortnox,bank)
+    #Save to a csv to work with
+    data = np.asarray([lst_date,lst_sum,lst_wrong],dtype=object)
+    np.savetxt("data.csv", data, fmt='%s')
 
 def arrange_txt(file):
+    """ Takes the txtfile and arranges the data to be analyzed """
     with open(file, "r") as f:
         lines = f.readlines()
     f.close()
@@ -48,9 +52,9 @@ def arrange_txt(file):
     return fortnox
 
 def arrange_csv(file):
+    """ Reads the csv and arranges the data to be analyzed """
     with open(file,'r') as f:
         reader = csv.reader(f)
-    f.close()
         rows = dict()
         count = 0
         for row in reader:
@@ -88,6 +92,7 @@ def arrange_date_txt(txtfile):
     return datedict
 
 def arrange_date_csv(csvfile):
+    """Arranges the transactions in the bank file in dates """
     datedictcsv = dict()
     for key,value in csvfile.items():
         value[3] = parseNumber(value[3])
@@ -115,6 +120,7 @@ def check_total(accounting,real):
     """ Takes two dictionaries and checks if the two matches. """
     check_date = []
     check_sum = []
+    wrong_date = []
     for key,value in real.items():
         if key not in accounting:
             check_date.append(key)
@@ -128,8 +134,10 @@ def check_total(accounting,real):
                 sum_accounting += transaction[0]
             if not sum_real == sum_accounting:
                 check_sum.append(key)
-
-    return check_date,check_sum
+    for key,value in accounting.items():
+        if key not in real:
+            wrong_date.append(key)
+    return check_date,check_sum,wrong_date
 
 def parseNumber(text):
     """ Function copied from github """
