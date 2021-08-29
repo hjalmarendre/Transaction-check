@@ -4,16 +4,20 @@ import re
 import numpy as np
 
 def main():
+    
     if len(sys.argv) == 2:
         sys.exit("Usage py transaktioner.py fortnox.txt transaktioner.csv")
+    
     #Create dictionarys
     fortnox = arrange_txt(sys.argv[1])
     bank = arrange_csv(sys.argv[2])
+    
     #Check for errors. The function can be improved and get smarter. At the moment very easy check.
     (lst_date,lst_sum,lst_wrong) = check_total(fortnox,bank)
+    
     #Save to a csv to work with
-    data = np.asarray([lst_date,lst_sum,lst_wrong],dtype=object)
-    np.savetxt("data.csv", data, fmt='%s')
+    data = np.array([lst_date,lst_sum,lst_wrong],dtype=object)
+    np.savetxt("ToCheck2.csv", data, fmt='%s',delimiter=",")
 
 def arrange_txt(file):
     """ Takes the txtfile and arranges the data to be analyzed """
@@ -65,7 +69,9 @@ def arrange_csv(file):
             del rows[f'{i}']
         
         for key,value in rows.items():
-            list_rm = rows[f'{key}'][1:7]
+            list_rm = rows[f'{key}'][1:5]
+            list_rm.append(rows[f'{key}'][6])
+            list_rm.append(rows[f'{key}'][7])
             list_rm.append(rows[f'{key}'][9])
             for rm in list_rm:
                 if rm in value:
@@ -121,6 +127,7 @@ def check_total(accounting,real):
     check_date = []
     check_sum = []
     wrong_date = []
+    
     for key,value in real.items():
         if key not in accounting:
             check_date.append(key)
@@ -134,9 +141,19 @@ def check_total(accounting,real):
                 sum_accounting += transaction[0]
             if not sum_real == sum_accounting:
                 check_sum.append(key)
+    
     for key,value in accounting.items():
-        if key not in real:
+        sum_acc = 0
+        for transaction in value:
+            sum_acc += transaction[0]
+        if key not in real and sum_acc != 0:
             wrong_date.append(key)
+    
+    check_date.insert(0,"Date that is not represented in Fortnox")
+    check_sum.insert(0,"Sum that is not represented in Fortnox")
+    wrong_date.reverse()
+    wrong_date.insert(0,"Wrong date in Fortnox")
+
     return check_date,check_sum,wrong_date
 
 def parseNumber(text):
